@@ -12,7 +12,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
     - name: Download adgh filter files
-    - run: |
+      run: |
         mkdir -p publish
         wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt -O ./publish/AdGuard-DNS-filter.txt
         wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt -O ./publish/AdAway-Default-Blocklist.txt
@@ -20,7 +20,7 @@ jobs:
         wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt -O ./publish/CHN-AdRules-DNS-List.txt
         wget -nv https://easylist.to/easylist/easyprivacy.txt -O ./publish/EasyPrivacy.txt
     - name: Get time
-    - run: |
+      run: |
         echo "TIME=$(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
         cat > release.txt << 'EOF'
         ${{ env.TIME }}
