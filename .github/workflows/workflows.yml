@@ -1,0 +1,50 @@
+on:
+ schedule:
+  - cron: 0 22 * * *
+ workflow_dispatch:
+ push:
+  branches:
+   - main
+jobs:
+ Update:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout
+      uses: actions/checkout@main
+    - name: Download adgh filter files
+    - run: |
+        mkdir -p publish
+        wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt -O ./publish/AdGuard-DNS-filter.txt
+        wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt -O ./publish/AdAway-Default-Blocklist.txt
+        wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt -O ./publish/OISD-Blocklist-Big.txt
+        wget -nv https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt -O ./publish/CHN-AdRules-DNS-List.txt
+        wget -nv https://easylist.to/easylist/easyprivacy.txt -O ./publish/EasyPrivacy.txt
+    - name: Get time
+    - run: |
+        echo "TIME=$(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+        cat > release.txt << 'EOF'
+        ${{ env.TIME }}
+        EOF
+    - name: Release and upload assets
+      uses: softprops/action-gh-release@v1
+      with:
+        name: latest
+        tag_name: latest
+        draft: false
+        prerelease: false
+        body_path: release.txt
+        files: |
+          ./publish/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Purge jsdelivr CDN
+      run: |
+        cd publish || exit 1
+        for file in $(ls); do
+          curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@latest/${file}"
+        done
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 1
+        keep_minimum_runs: 1
